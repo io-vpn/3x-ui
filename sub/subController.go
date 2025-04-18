@@ -53,7 +53,6 @@ func (a *SUBController) initRouter(g *gin.RouterGroup) {
 	gJson := g.Group(a.subJsonPath)
 
 	gLink.GET(":subid", a.subs)
-
 	gJson.GET(":subid", a.subJsons)
 }
 
@@ -73,6 +72,7 @@ func (a *SUBController) subs(c *gin.Context) {
 			host = c.Request.Host
 		}
 	}
+
 	subs, header, err := a.subService.GetSubs(subId, host)
 	if err != nil || len(subs) == 0 {
 		c.String(400, "Error!")
@@ -82,10 +82,12 @@ func (a *SUBController) subs(c *gin.Context) {
 			result += sub + "\n"
 		}
 
-		// Add headers
+		// Custom headers (как в nginx)
 		c.Writer.Header().Set("Subscription-Userinfo", header)
 		c.Writer.Header().Set("Profile-Update-Interval", a.updateInterval)
 		c.Writer.Header().Set("Profile-Title", "iovpn")
+		c.Writer.Header().Set("Announce-URL", "https://t.me/io_vpnbot")
+		c.Writer.Header().Set("Announce", "🚀 Наш VPN не умеет готовить кофе... но всё остальное — делает идеально! ☕")
 
 		if a.subEncrypt {
 			c.String(200, base64.StdEncoding.EncodeToString([]byte(result)))
@@ -111,15 +113,17 @@ func (a *SUBController) subJsons(c *gin.Context) {
 			host = c.Request.Host
 		}
 	}
+
 	jsonSub, header, err := a.subJsonService.GetJson(subId, host)
 	if err != nil || len(jsonSub) == 0 {
 		c.String(400, "Error!")
 	} else {
-
-		// Add headers
+		// Custom headers
 		c.Writer.Header().Set("Subscription-Userinfo", header)
 		c.Writer.Header().Set("Profile-Update-Interval", a.updateInterval)
-		c.Writer.Header().Set("Profile-Title", "base64:" + base64.StdEncoding.EncodeToString([]byte(a.subTitle)))
+		c.Writer.Header().Set("Profile-Title", "iovpn")
+		c.Writer.Header().Set("Announce-URL", "https://t.me/io_vpnbot")
+		c.Writer.Header().Set("Announce", "🚀 Наш VPN не умеет готовить кофе... но всё остальное — делает идеально! ☕")
 
 		c.String(200, jsonSub)
 	}
